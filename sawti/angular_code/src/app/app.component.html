@@ -1,0 +1,237 @@
+<div class="min-h-screen bg-slate-100 flex flex-col font-sans">
+  
+  <!-- Mauritanian Tri-color strip -->
+  <div class="h-1.5 w-full flex">
+    <div class="flex-grow bg-[#006B3F]"></div>
+    <div class="w-24 bg-[#D4AF37]"></div>
+    <div class="flex-grow bg-[#006B3F]"></div>
+    <div class="w-16 bg-[#C1272D]"></div>
+    <div class="flex-grow bg-[#006B3F]"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-emerald-50 rounded-xl border border-emerald-500/30 flex items-center justify-center">
+        <span class="text-xl">🏛️</span>
+      </div>
+      <div>
+        <h1 class="text-xl font-extrabold text-emerald-800 tracking-wide">PORTAIL NATIONAL SAWTI (ANGULAR ADMIN)</h1>
+        <p class="text-xs text-slate-500">République Islamique de Mauritanie • Ministère de la Transition Numérique & de l'Innovation</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg">
+        👤 Compte Administration: Inspecteur National
+      </span>
+    </div>
+  </header>
+
+  <!-- Statistics Grid -->
+  <div class="p-8 grid grid-cols-2 md:grid-cols-6 gap-4">
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="text-xs text-slate-400 font-bold uppercase">Total Dossiers</div>
+      <div class="text-2xl font-black text-slate-800 mt-1">{{ stats.total }}</div>
+    </div>
+    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
+      <div class="text-xs text-amber-600 font-bold uppercase">Soumis</div>
+      <div class="text-2xl font-black text-amber-700 mt-1">{{ stats.submitted }}</div>
+    </div>
+    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm">
+      <div class="text-xs text-blue-600 font-bold uppercase">Reçus</div>
+      <div class="text-2xl font-black text-blue-700 mt-1">{{ stats.processing }}</div>
+    </div>
+    <div class="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
+      <div class="text-xs text-orange-600 font-bold uppercase">En Enquête</div>
+      <div class="text-2xl font-black text-orange-700 mt-1">{{ stats.investigating }}</div>
+    </div>
+    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm">
+      <div class="text-xs text-emerald-600 font-bold uppercase">Résolus</div>
+      <div class="text-2xl font-black text-emerald-700 mt-1">{{ stats.resolved }}</div>
+    </div>
+    <div class="bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm">
+      <div class="text-xs text-red-600 font-bold uppercase">Rejetés</div>
+      <div class="text-2xl font-black text-red-700 mt-1">{{ stats.rejected }}</div>
+    </div>
+  </div>
+
+  <!-- Search and Filters bar -->
+  <div class="px-8 pb-4 flex flex-col md:flex-row gap-4">
+    <div class="flex-grow">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        placeholder="Rechercher par référence, mot-clé ou citoyen..." 
+        class="w-full bg-white px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
+      />
+    </div>
+    <div class="flex gap-2">
+      <select 
+        [(ngModel)]="categoryFilter" 
+        class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold"
+      >
+        <option value="all">Toutes Catégories</option>
+        <option value="Eau & Électricité">Eau & Électricité</option>
+        <option value="Santé & Hôpitaux">Santé & Hôpitaux</option>
+        <option value="Éducation">Éducation</option>
+        <option value="Infrastructures">Infrastructures</option>
+        <option value="Administration">Administration</option>
+      </select>
+
+      <select 
+        [(ngModel)]="statusFilter" 
+        class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold"
+      >
+        <option value="all">Tous Statuts</option>
+        <option value="submitted">Soumis</option>
+        <option value="processing">Reçu</option>
+        <option value="investigating">En Enquête</option>
+        <option value="resolved">Résolu</option>
+        <option value="rejected">Rejeté</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Workspace split -->
+  <div class="flex-grow px-8 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
+    
+    <!-- Left column: Filtered list (5 columns) -->
+    <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-y-auto max-h-[550px]">
+      <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <h3 class="text-xs font-black uppercase text-slate-500 tracking-wider">Liste des signalements</h3>
+        <span class="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+          {{ getFilteredComplaints().length }} résultat(s)
+        </span>
+      </div>
+      
+      <div class="divide-y divide-slate-100">
+        <div 
+          *ngFor="let complaint of getFilteredComplaints()" 
+          (click)="selectComplaint(complaint)"
+          [class.bg-emerald-50]="selectedComplaint?.id === complaint.id"
+          class="p-4 hover:bg-slate-50 transition-all cursor-pointer flex flex-col gap-2"
+        >
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-emerald-700 font-mono">{{ complaint.reference }}</span>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded"
+                  [ngClass]="{
+                    'bg-amber-100 text-amber-800': complaint.status === 'submitted',
+                    'bg-blue-100 text-blue-800': complaint.status === 'processing',
+                    'bg-orange-100 text-orange-800': complaint.status === 'investigating',
+                    'bg-emerald-100 text-emerald-800': complaint.status === 'resolved',
+                    'bg-red-100 text-red-800': complaint.status === 'rejected'
+                  }">
+              {{ complaint.status }}
+            </span>
+          </div>
+          <h4 class="text-sm font-bold text-slate-800 truncate">{{ complaint.title }}</h4>
+          <div class="flex justify-between items-center text-[11px] text-slate-400">
+            <span>👤 {{ complaint.citizenName }}</span>
+            <span>📍 {{ complaint.moughataa }}</span>
+          </div>
+        </div>
+        
+        <div *ngIf="getFilteredComplaints().length === 0" class="p-8 text-center text-slate-400 text-sm">
+          Aucune réclamation trouvée avec ces critères.
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: Detail Inspector (7 columns) -->
+    <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col p-6 overflow-y-auto max-h-[550px]">
+      
+      <div *ngIf="selectedComplaint" class="flex flex-col gap-6">
+        
+        <!-- Inspector Title -->
+        <div class="border-b border-slate-100 pb-4 flex justify-between items-start">
+          <div>
+            <span class="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
+              Dossier Réf: {{ selectedComplaint.reference }}
+            </span>
+            <h2 class="text-lg font-extrabold text-slate-800 mt-2">{{ selectedComplaint.title }}</h2>
+            <p class="text-xs text-slate-400 mt-1">Déposé le: {{ selectedComplaint.createdAt | date:'medium' }}</p>
+          </div>
+          <span class="text-xs font-mono bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-lg uppercase">
+            Priorité: {{ selectedComplaint.priority }}
+          </span>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider">Description de l'incident</h3>
+          <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 mt-2">
+            {{ selectedComplaint.description }}
+          </p>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div class="text-[10px] text-slate-400 uppercase font-black">Citoyen Signalant</div>
+            <div class="text-xs font-bold text-slate-700 mt-1">{{ selectedComplaint.citizenName }}</div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div class="text-[10px] text-slate-400 uppercase font-black">Zone (Wilaya / Moughataa)</div>
+            <div class="text-xs font-bold text-slate-700 mt-1">{{ selectedComplaint.wilaya }} / {{ selectedComplaint.moughataa }}</div>
+          </div>
+        </div>
+
+        <!-- Interactive Actions for officials -->
+        <div class="border-t border-slate-100 pt-6">
+          <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Changer le Statut Administratif</h3>
+          
+          <div class="flex flex-wrap gap-2">
+            <button 
+              (click)="updateStatus(selectedComplaint.id, 'processing')"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 transition-all cursor-pointer"
+            >
+              Mettre en "Reçu"
+            </button>
+            <button 
+              (click)="updateStatus(selectedComplaint.id, 'investigating')"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 text-orange-800 hover:bg-orange-200 transition-all cursor-pointer"
+            >
+              Lancer l'Enquête
+            </button>
+            <button 
+              (click)="updateStatus(selectedComplaint.id, 'resolved')"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all cursor-pointer"
+            >
+              Déclarer "Résolu"
+            </button>
+            <button 
+              (click)="updateStatus(selectedComplaint.id, 'rejected')"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition-all cursor-pointer"
+            >
+              Rejeter la Demande
+            </button>
+          </div>
+        </div>
+
+        <!-- Priority Upgrades -->
+        <div class="pt-2">
+          <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Ajuster le niveau de Priorité</h3>
+          <div class="flex gap-2">
+            <button 
+              *ngFor="let p of ['low', 'medium', 'high', 'critical']"
+              (click)="updatePriority(selectedComplaint.id, p)"
+              [class.bg-slate-800]="selectedComplaint.priority === p"
+              [class.text-white]="selectedComplaint.priority === p"
+              class="px-2.5 py-1 text-xs rounded border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+            >
+              {{ p | uppercase }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div *ngIf="!selectedComplaint" class="flex-grow flex flex-col items-center justify-center text-slate-400 py-12">
+        <span>🔍 Sélectionnez un incident de la liste de gauche pour l'inspecter et appliquer les décisions.</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
